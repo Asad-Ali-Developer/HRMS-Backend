@@ -4,6 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { allowedHeaders, allowedOrigins } from './utils';
 import passport from 'passport';
+import cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -41,8 +43,13 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Set global API prefix
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
 
-  await app.listen(process.env.PORT ?? 3000);
+   // Cookie parser and body parsers AFTER rate limiting
+  app.use(cookieParser());
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
+
+  await app.listen(process.env.PORT ?? 8080);
 }
 bootstrap();
