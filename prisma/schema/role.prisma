@@ -1,5 +1,5 @@
 model Role {
-  id       String  @id @default(cuid())
+  id       String  @id @default(uuid())
   name     String  @unique
   isSystem Boolean @default(false)
 

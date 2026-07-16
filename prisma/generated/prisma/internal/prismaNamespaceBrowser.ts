@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  Branch: 'Branch',
   Role: 'Role',
   User: 'User'
 } as const
@@ -71,6 +72,23 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const BranchScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  location: 'location',
+  email: 'email',
+  phone: 'phone',
+  landline: 'landline',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BranchScalarFieldEnum = (typeof BranchScalarFieldEnum)[keyof typeof BranchScalarFieldEnum]
+
+
 export const RoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -88,6 +106,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   password: 'password',
   status: 'status',
+  hashedRefreshToken: 'hashedRefreshToken',
   roleId: 'roleId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -110,4 +129,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

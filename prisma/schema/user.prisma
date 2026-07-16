@@ -1,12 +1,16 @@
 model User {
-  id       String     @id @default(cuid())
-  name     String
-  email    String     @unique
-  password String
-  status   UserStatus @default(ACTIVE)
+  id                 String     @id @default(uuid())
+  name               String
+  email              String     @unique
+  password           String
+  status             UserStatus @default(ACTIVE)
+  hashedRefreshToken String?
 
   roleId String
   role   Role   @relation(fields: [roleId], references: [id])
+
+  branchesCreated Branch[] @relation("BranchCreatedBy")
+  branchesUpdated Branch[] @relation("BranchUpdatedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

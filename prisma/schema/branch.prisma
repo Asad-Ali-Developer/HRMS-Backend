@@ -1,0 +1,18 @@
+model Branch {
+    id       String  @id @default(uuid())
+    name     String
+    location String
+    email    String  @unique
+    phone    String?
+    landline String?
+    isActive Boolean @default(true)
+
+    createdById String
+    createdBy   User   @relation("BranchCreatedBy", fields: [createdById], references: [id])
+
+    updatedById String?
+    updatedBy   User?   @relation("BranchUpdatedBy", fields: [updatedById], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
