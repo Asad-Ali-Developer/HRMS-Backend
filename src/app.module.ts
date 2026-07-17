@@ -3,7 +3,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import JWTConfig from './config/JWT.config';
-import { AdminModule, AuthModule, BranchModule, PrismaModule } from './modules';
+import {
+  AdminModule,
+  AuthModule,
+  BranchModule,
+  DepartmentModule,
+  PrismaModule,
+} from './modules';
 
 @Module({
   imports: [
@@ -16,6 +22,7 @@ import { AdminModule, AuthModule, BranchModule, PrismaModule } from './modules';
     AdminModule,
     AuthModule,
     BranchModule,
+    DepartmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

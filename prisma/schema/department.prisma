@@ -1,0 +1,22 @@
+model Department {
+    id          String  @id @default(uuid())
+    name        String
+    description String?
+    code        String? @unique // Optional department code for identification
+    isActive    Boolean @default(true)
+
+    createdById String
+    createdBy   User   @relation("DepartmentCreatedBy", fields: [createdById], references: [id])
+
+    updatedById String?
+    updatedBy   User?   @relation("DepartmentUpdatedBy", fields: [updatedById], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Optional: Add relationships
+    // employees   Employee[]  // If you have an Employee model
+
+    @@index([name])
+    @@index([isActive])
+}

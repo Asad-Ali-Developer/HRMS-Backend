@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Branch: 'Branch',
+  Department: 'Department',
   Role: 'Role',
   User: 'User'
 } as const
@@ -87,6 +88,21 @@ export const BranchScalarFieldEnum = {
 } as const
 
 export type BranchScalarFieldEnum = (typeof BranchScalarFieldEnum)[keyof typeof BranchScalarFieldEnum]
+
+
+export const DepartmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  code: 'code',
+  isActive: 'isActive',
+  createdById: 'createdById',
+  updatedById: 'updatedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
 
 
 export const RoleScalarFieldEnum = {

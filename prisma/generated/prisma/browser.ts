@@ -23,6 +23,11 @@ export * from './enums.js';
  */
 export type Branch = Prisma.BranchModel
 /**
+ * Model Department
+ * 
+ */
+export type Department = Prisma.DepartmentModel
+/**
  * Model Role
  * 
  */
