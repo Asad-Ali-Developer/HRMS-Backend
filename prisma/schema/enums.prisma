@@ -8,3 +8,14 @@ enum Gender {
   FEMALE
   OTHER
 }
+
+enum PermissionAction {
+  VIEW
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  EXPORT
+  IMPORT
+}

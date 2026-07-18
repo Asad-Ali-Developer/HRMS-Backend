@@ -53,7 +53,12 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Branch: 'Branch',
   Department: 'Department',
+  DepartmentHead: 'DepartmentHead',
+  Employee: 'Employee',
+  Module: 'Module',
+  RolePermission: 'RolePermission',
   Role: 'Role',
+  SubModule: 'SubModule',
   User: 'User'
 } as const
 
@@ -105,15 +110,93 @@ export const DepartmentScalarFieldEnum = {
 export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
 
 
+export const DepartmentHeadScalarFieldEnum = {
+  id: 'id',
+  departmentId: 'departmentId',
+  employeeId: 'employeeId',
+  assignedAt: 'assignedAt',
+  remarks: 'remarks',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DepartmentHeadScalarFieldEnum = (typeof DepartmentHeadScalarFieldEnum)[keyof typeof DepartmentHeadScalarFieldEnum]
+
+
+export const EmployeeScalarFieldEnum = {
+  id: 'id',
+  roleId: 'roleId',
+  branchId: 'branchId',
+  departmentId: 'departmentId',
+  departmentHeadId: 'departmentHeadId',
+  email: 'email',
+  password: 'password',
+  hashedRefreshToken: 'hashedRefreshToken',
+  name: 'name',
+  personalPhone: 'personalPhone',
+  companyPhone: 'companyPhone',
+  salary: 'salary',
+  annualLeaves: 'annualLeaves',
+  cnic: 'cnic',
+  gender: 'gender',
+  address: 'address',
+  remarks: 'remarks',
+  jd: 'jd',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
+
+
+export const ModuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModuleScalarFieldEnum = (typeof ModuleScalarFieldEnum)[keyof typeof ModuleScalarFieldEnum]
+
+
+export const RolePermissionScalarFieldEnum = {
+  id: 'id',
+  roleId: 'roleId',
+  subModuleId: 'subModuleId',
+  actions: 'actions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
+
+
 export const RoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  description: 'description',
   isSystem: 'isSystem',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
+
+
+export const SubModuleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  moduleId: 'moduleId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubModuleScalarFieldEnum = (typeof SubModuleScalarFieldEnum)[keyof typeof SubModuleScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {

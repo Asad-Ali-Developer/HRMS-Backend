@@ -1,9 +1,12 @@
 model Role {
-  id       String  @id @default(uuid())
-  name     String  @unique
-  isSystem Boolean @default(false)
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  isSystem    Boolean @default(false)
 
-  users User[]
+  users       User[]
+  employees   Employee[]
+  permissions RolePermission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

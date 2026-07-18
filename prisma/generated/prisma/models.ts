@@ -10,6 +10,11 @@
  */
 export type * from './models/Branch.js'
 export type * from './models/Department.js'
+export type * from './models/DepartmentHead.js'
+export type * from './models/Employee.js'
+export type * from './models/Module.js'
+export type * from './models/RolePermission.js'
 export type * from './models/Role.js'
+export type * from './models/SubModule.js'
 export type * from './models/User.js'
 export type * from './commonInputTypes.js'

@@ -1,29 +1,29 @@
 import {
-  Body,
-  Controller,
-  Delete,
+  Req,
   Get,
+  Put,
+  Body,
+  Post,
   Param,
   Patch,
-  Post,
-  Put,
   Query,
-  Req,
+  Delete,
   UseGuards,
+  Controller,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
   ApiTags,
+  ApiQuery,
+  ApiParam,
+  ApiResponse,
+  ApiOperation,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard, RolesGuard } from '../../guards';
-import { BranchService } from '../../services';
-import { CreateBranchDto, UpdateBranchDto } from '../../DTOs';
 import { Roles } from '../../decorators';
+import { BranchService } from '../../services';
+import { JwtAuthGuard, RolesGuard } from '../../guards';
+import { CreateBranchDto, UpdateBranchDto } from '../../DTOs';
 
 @ApiTags('Branch')
 @ApiBearerAuth()

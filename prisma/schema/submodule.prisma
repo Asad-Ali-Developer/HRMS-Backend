@@ -1,0 +1,17 @@
+model SubModule {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  isActive Boolean @default(true)
+
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  permissions RolePermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([moduleId, name])
+}

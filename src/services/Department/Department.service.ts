@@ -1,15 +1,21 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../PrismaService/Prisma.service';
 import { CreateDepartmentDto, UpdateDepartmentDto } from '../../DTOs';
 import { verifyAdmin } from '../../utils';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class DepartmentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   // ─── Create Department ─────────────────────────────────────────────
   async createDepartment(dto: CreateDepartmentDto, adminId: string) {
@@ -68,6 +74,15 @@ export class DepartmentService {
 
   // ─── Get All Departments ──────────────────────────────────────────
   async getAllDepartments(page: number = 1, limit: number = 10) {
+    const cached = await this.cache.get('all:depts');
+
+    if (cached) {
+      return {
+        message: 'Departments fetched successfully. (cache)',
+        data: cached,
+      };
+    }
+
     // Validate page and limit parameters
     const pageNumber = Math.max(1, parseInt(String(page)) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 10));
@@ -97,6 +112,8 @@ export class DepartmentService {
     const totalPages = Math.ceil(totalCount / pageSize);
     const hasNextPage = pageNumber < totalPages;
     const hasPreviousPage = pageNumber > 1;
+
+    await this.cache.set('all:departments', departments, 300 * 1000);
 
     return {
       message: 'Departments fetched successfully.',

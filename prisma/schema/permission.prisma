@@ -1,0 +1,16 @@
+model RolePermission {
+  id String @id @default(uuid())
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  subModuleId String
+  subModule   SubModule @relation(fields: [subModuleId], references: [id], onDelete: Cascade)
+
+  actions PermissionAction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([roleId, subModuleId])
+}

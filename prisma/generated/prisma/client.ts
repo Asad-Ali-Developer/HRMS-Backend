@@ -50,10 +50,35 @@ export type Branch = Prisma.BranchModel
  */
 export type Department = Prisma.DepartmentModel
 /**
+ * Model DepartmentHead
+ * 
+ */
+export type DepartmentHead = Prisma.DepartmentHeadModel
+/**
+ * Model Employee
+ * 
+ */
+export type Employee = Prisma.EmployeeModel
+/**
+ * Model Module
+ * 
+ */
+export type Module = Prisma.ModuleModel
+/**
+ * Model RolePermission
+ * 
+ */
+export type RolePermission = Prisma.RolePermissionModel
+/**
  * Model Role
  * 
  */
 export type Role = Prisma.RoleModel
+/**
+ * Model SubModule
+ * 
+ */
+export type SubModule = Prisma.SubModuleModel
 /**
  * Model User
  * 

@@ -1,15 +1,21 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../PrismaService/Prisma.service';
 import { CreateBranchDto, UpdateBranchDto } from '../../DTOs';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class BranchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   // ─── Verify Admin Role ─────────────────────────────────────────────
   private async verifyAdmin(userId: string) {
@@ -64,6 +70,15 @@ export class BranchService {
 
   // ─── Get All Branches ──────────────────────────────────────────────
   async getAllBranches(page: number = 1, limit: number = 10) {
+    const cached = await this.cache.get('all:branches');
+
+    if (cached) {
+      return {
+        message: 'Branches fetched successfully. (cache)',
+        data: cached,
+      };
+    }
+
     // Validate page and limit parameters
     const pageNumber = Math.max(1, parseInt(String(page)) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(String(limit)) || 10));
@@ -93,6 +108,8 @@ export class BranchService {
     const totalPages = Math.ceil(totalCount / pageSize);
     const hasNextPage = pageNumber < totalPages;
     const hasPreviousPage = pageNumber > 1;
+
+    await this.cache.set('all:branches', branches, 300 * 1000);
 
     return {
       message: 'Branches fetched successfully.',

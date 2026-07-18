@@ -11,6 +11,18 @@ import { JwtPayload } from '../../strategy';
 import { PrismaService } from '../PrismaService/Prisma.service';
 import { LoginDto } from '../../DTOs';
 
+type PrincipalType = 'user' | 'employee';
+
+interface Principal {
+  id: string;
+  email: string;
+  password: string;
+  hashedRefreshToken: string | null;
+  isActive: boolean;
+  role: { name: string };
+  type: PrincipalType;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -18,6 +30,84 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
   ) {}
+
+  // ─── Resolve Principal By Email (User first, then Employee) ────────
+  private async findPrincipalByEmail(email: string): Promise<Principal | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { role: true },
+    });
+
+    if (user) {
+      return {
+        id: user.id,
+        email: user.email,
+        password: user.password,
+        hashedRefreshToken: user.hashedRefreshToken,
+        isActive: user.status !== 'INACTIVE',
+        role: { name: user.role.name },
+        type: 'user',
+      };
+    }
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { email },
+      include: { role: true },
+    });
+
+    if (employee) {
+      return {
+        id: employee.id,
+        email: employee.email,
+        password: employee.password,
+        hashedRefreshToken: employee.hashedRefreshToken,
+        isActive: employee.isActive,
+        role: { name: employee.role.name },
+        type: 'employee',
+      };
+    }
+
+    return null;
+  }
+
+  // ─── Resolve Principal By ID (User first, then Employee) ───────────
+  private async findPrincipalById(id: string): Promise<Principal | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { role: true },
+    });
+
+    if (user) {
+      return {
+        id: user.id,
+        email: user.email,
+        password: user.password,
+        hashedRefreshToken: user.hashedRefreshToken,
+        isActive: user.status !== 'INACTIVE',
+        role: { name: user.role.name },
+        type: 'user',
+      };
+    }
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { id },
+      include: { role: true },
+    });
+
+    if (employee) {
+      return {
+        id: employee.id,
+        email: employee.email,
+        password: employee.password,
+        hashedRefreshToken: employee.hashedRefreshToken,
+        isActive: employee.isActive,
+        role: { name: employee.role.name },
+        type: 'employee',
+      };
+    }
+
+    return null;
+  }
 
   // ─── Generate Tokens ───────────────────────────────────────────────
   private async generateTokens(payload: JwtPayload) {
@@ -65,12 +155,39 @@ export class AuthService {
   }
 
   // ─── Hash & Store Refresh Token ────────────────────────────────────
-  private async storeRefreshToken(userId: string, refreshToken: string) {
+  private async storeRefreshToken(
+    type: PrincipalType,
+    id: string,
+    refreshToken: string,
+  ) {
     const hashed = await bcrypt.hash(refreshToken, 10);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { hashedRefreshToken: hashed },
-    });
+
+    if (type === 'user') {
+      await this.prisma.user.update({
+        where: { id },
+        data: { hashedRefreshToken: hashed },
+      });
+    } else {
+      await this.prisma.employee.update({
+        where: { id },
+        data: { hashedRefreshToken: hashed },
+      });
+    }
+  }
+
+  // ─── Clear Stored Refresh Token ─────────────────────────────────────
+  private async clearRefreshToken(type: PrincipalType, id: string) {
+    if (type === 'user') {
+      await this.prisma.user.update({
+        where: { id },
+        data: { hashedRefreshToken: null },
+      });
+    } else {
+      await this.prisma.employee.update({
+        where: { id },
+        data: { hashedRefreshToken: null },
+      });
+    }
   }
 
   // ─── Strip Sensitive Fields ────────────────────────────────────────
@@ -81,32 +198,36 @@ export class AuthService {
 
   // ─── Login ─────────────────────────────────────────────────────────
   async login(dto: LoginDto, res: Response) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-      include: { role: true },
-    });
+    const principal = await this.findPrincipalByEmail(dto.email);
 
-    if (!user) {
+    if (!principal) {
       throw new NotFoundException('Invalid email or password.');
     }
 
-    if (user.status === 'INACTIVE') {
+    if (!principal.isActive) {
       throw new UnauthorizedException('Your account is inactive.');
     }
 
-    const passwordMatch = await bcrypt.compare(dto.password, user.password);
+    const passwordMatch = await bcrypt.compare(
+      dto.password,
+      principal.password,
+    );
     if (!passwordMatch) {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
     const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role.name,
+      sub: principal.id,
+      email: principal.email,
+      role: principal.role.name,
     };
 
     const tokens = await this.generateTokens(payload);
-    await this.storeRefreshToken(user.id, tokens.refreshToken);
+    await this.storeRefreshToken(
+      principal.type,
+      principal.id,
+      tokens.refreshToken,
+    );
     this.setCookies(res, tokens.accessToken, tokens.refreshToken);
 
     return {
@@ -139,32 +260,26 @@ export class AuthService {
       );
     }
 
-    // fetch user with role
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      include: { role: true },
-    });
+    // fetch principal (User or Employee) with role
+    const principal = await this.findPrincipalById(payload.sub);
 
-    if (!user || !user.hashedRefreshToken) {
+    if (!principal || !principal.hashedRefreshToken) {
       throw new UnauthorizedException('Access denied. Please login again.');
     }
 
-    if (user.status === 'INACTIVE') {
+    if (!principal.isActive) {
       throw new UnauthorizedException('Your account is inactive.');
     }
 
     // verify cookie token matches hashed value in DB (rotation check)
     const refreshTokenMatch = await bcrypt.compare(
       refreshToken,
-      user.hashedRefreshToken,
+      principal.hashedRefreshToken,
     );
 
     if (!refreshTokenMatch) {
       // token reuse detected — wipe refresh token from DB as security measure
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { hashedRefreshToken: null },
-      });
+      await this.clearRefreshToken(principal.type, principal.id);
       this.clearCookies(res);
       throw new UnauthorizedException(
         'Refresh token reuse detected. Please login again.',
@@ -173,13 +288,17 @@ export class AuthService {
 
     // rotate both tokens
     const newPayload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role.name,
+      sub: principal.id,
+      email: principal.email,
+      role: principal.role.name,
     };
 
     const tokens = await this.generateTokens(newPayload);
-    await this.storeRefreshToken(user.id, tokens.refreshToken);
+    await this.storeRefreshToken(
+      principal.type,
+      principal.id,
+      tokens.refreshToken,
+    );
     this.setCookies(res, tokens.accessToken, tokens.refreshToken);
 
     return {
@@ -187,26 +306,21 @@ export class AuthService {
       data: {
         // user: this.sanitizeUser(user),
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken
+        refreshToken: tokens.refreshToken,
       },
     };
   }
 
   // ─── Logout ────────────────────────────────────────────────────────
   async logout(userId: string, res: Response) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const principal = await this.findPrincipalById(userId);
 
-    if (!user) {
+    if (!principal) {
       throw new NotFoundException('User not found.');
     }
 
     // invalidate refresh token in DB
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { hashedRefreshToken: null },
-    });
+    await this.clearRefreshToken(principal.type, principal.id);
 
     this.clearCookies(res);
 
@@ -236,13 +350,43 @@ export class AuthService {
       },
     });
 
-    if (!user) {
+    if (user) {
+      return {
+        message: 'User fetched successfully.',
+        data: { ...user, type: 'user' },
+      };
+    }
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isActive: true,
+        branchId: true,
+        departmentId: true,
+        createdAt: true,
+        updatedAt: true,
+        role: {
+          select: {
+            id: true,
+            name: true,
+            isSystem: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!employee) {
       throw new NotFoundException('User not found.');
     }
 
     return {
       message: 'User fetched successfully.',
-      data: user,
+      data: { ...employee, type: 'employee' },
     };
   }
 }

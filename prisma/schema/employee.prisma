@@ -1,0 +1,44 @@
+model Employee {
+  id String @id @default(uuid())
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  departmentId String
+
+  departmentHeadId String?
+
+  email    String @unique
+  password String
+
+  hashedRefreshToken String?
+
+  name String
+
+  personalPhone String
+  companyPhone  String?
+
+  salary Decimal @db.Decimal(10, 2)
+
+  annualLeaves Int @default(30)
+
+  departmentHead DepartmentHead?
+
+  cnic String @unique
+
+  gender Gender
+
+  address String?
+
+  remarks String?
+
+  jd String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

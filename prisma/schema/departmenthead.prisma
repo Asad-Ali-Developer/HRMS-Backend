@@ -1,0 +1,15 @@
+model DepartmentHead {
+  id String @id @default(uuid())
+
+  departmentId String     @unique
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  employeeId String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+  remarks    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
