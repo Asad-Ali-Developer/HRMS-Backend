@@ -30,6 +30,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly roleService: RoleService,
   ) {}
 
   // ─── Resolve Principal By Email (User first, then Employee) ────────
@@ -330,7 +331,7 @@ export class AuthService {
 
   // ─── Get Me ────────────────────────────────────────────────────────
   async getMe(userId: string) {
-    
+    // 1. Try to find as User first
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -344,6 +345,7 @@ export class AuthService {
           select: {
             id: true,
             name: true,
+            description: true,
             isSystem: true,
             createdAt: true,
             updatedAt: true,
@@ -352,13 +354,22 @@ export class AuthService {
       },
     });
 
-    if (user) {
+    if (user && user.role) {
+      const permissionMatrix = await this.roleService.getPermissionMatrix(
+        user.role.id,
+      );
+
       return {
         message: 'User fetched successfully.',
-        data: { ...user, type: 'user' },
+        data: {
+          ...user,
+          type: 'user',
+          role: permissionMatrix,
+        },
       };
     }
 
+    // 2. If not found as User, try Employee
     const employee = await this.prisma.employee.findUnique({
       where: { id: userId },
       select: {
@@ -374,6 +385,7 @@ export class AuthService {
           select: {
             id: true,
             name: true,
+            description: true,
             isSystem: true,
             createdAt: true,
             updatedAt: true,
@@ -382,13 +394,22 @@ export class AuthService {
       },
     });
 
-    if (!employee) {
-      throw new NotFoundException('User not found.');
+    if (employee && employee.role) {
+      const permissionMatrix = await this.roleService.getPermissionMatrix(
+        employee.role.id,
+      );
+
+      return {
+        message: 'User fetched successfully.',
+        data: {
+          ...employee,
+          type: 'employee',
+          role: permissionMatrix,
+        },
+      };
     }
 
-    return {
-      message: 'User fetched successfully.',
-      data: { ...employee, type: 'employee' },
-    };
+    // 3. If neither found or no role assigned
+    throw new NotFoundException('User not found or role not assigned.');
   }
 }
