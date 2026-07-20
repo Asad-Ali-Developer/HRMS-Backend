@@ -35,10 +35,23 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       include: { role: true },
     });
 
-    if (!user || user.status === 'INACTIVE') {
+    if (user) {
+      if (user.status === 'INACTIVE') {
+        throw new UnauthorizedException('Access denied.');
+      }
+
+      return { ...user, type: 'user' };
+    }
+
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: payload.sub },
+      include: { role: true },
+    });
+
+    if (!employee || !employee.isActive) {
       throw new UnauthorizedException('Access denied.');
     }
 
-    return user;
+    return { ...employee, type: 'employee' };
   }
 }

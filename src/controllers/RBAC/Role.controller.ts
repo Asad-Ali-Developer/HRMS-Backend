@@ -103,7 +103,7 @@ export class RoleController {
   }
 
   @Get(':roleId/permission-matrix')
-  @Roles('Admin')
+  // @Roles('Admin')
   @ApiOperation({
     summary: 'Get role permission matrix',
     description: 'Admin only.',

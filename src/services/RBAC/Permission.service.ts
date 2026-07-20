@@ -18,6 +18,16 @@ export class PermissionService {
     // Check first for Admin
     await verifyAdmin(userId, this.prisma);
 
+    const role = await this.prisma.role.findUnique({
+      where: { id: dto.roleId },
+    });
+    if (!role) throw new NotFoundException('Role not found.');
+
+    const subModule = await this.prisma.subModule.findUnique({
+      where: { id: dto.subModuleId },
+    });
+    if (!subModule) throw new NotFoundException('Sub-module not found.');
+
     const exists = await this.prisma.rolePermission.findFirst({
       where: {
         roleId: dto.roleId,
@@ -79,11 +89,31 @@ export class PermissionService {
 
     await this.findOne(id);
 
+    if (dto.roleId) {
+      const role = await this.prisma.role.findUnique({
+        where: { id: dto.roleId },
+      });
+      if (!role) throw new NotFoundException('Role not found.');
+    }
+
+    if (dto.subModuleId) {
+      const subModule = await this.prisma.subModule.findUnique({
+        where: { id: dto.subModuleId },
+      });
+      if (!subModule) throw new NotFoundException('Sub-module not found.');
+    }
+
     return this.prisma.rolePermission.update({
-      where: {
-        id,
-      },
+      where: { id },
       data: dto,
+      include: {
+        role: true,
+        subModule: {
+          include: {
+            module: true,
+          },
+        },
+      },
     });
   }
 

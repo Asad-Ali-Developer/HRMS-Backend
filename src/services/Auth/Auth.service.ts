@@ -10,6 +10,7 @@ import type { Response } from 'express';
 import { JwtPayload } from '../../strategy';
 import { PrismaService } from '../PrismaService/Prisma.service';
 import { LoginDto } from '../../DTOs';
+import { RoleService } from '../RBAC/Role.service';
 
 type PrincipalType = 'user' | 'employee';
 
@@ -329,6 +330,7 @@ export class AuthService {
 
   // ─── Get Me ────────────────────────────────────────────────────────
   async getMe(userId: string) {
+    
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
