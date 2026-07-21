@@ -104,4 +104,50 @@ export class ModuleController {
   remove(@Param('id') id: string, @Req() req: { user: { id: string } }) {
     return this.moduleService.remove(id, req.user.id);
   }
+
+  @Get('sidebar')
+  @ApiOperation({
+    summary: 'Get Sidebar Structure',
+    description:
+      'Fetches all active modules with their nested active submodules. Used for rendering the application sidebar.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sidebar structure fetched successfully.',
+    schema: {
+      example: {
+        message: 'Sidebar structure fetched successfully.',
+        data: [
+          {
+            id: 'mod-1',
+            name: 'Branch Management',
+            description: 'Manage branches',
+            isActive: true,
+            subModules: [
+              {
+                id: 'sub-1',
+                name: 'View Branches',
+                description: 'List all branches',
+              },
+              {
+                id: 'sub-2',
+                name: 'Create Branch',
+                description: 'Add new branch',
+              },
+            ],
+          },
+          {
+            id: 'mod-2',
+            name: 'User Management',
+            description: 'Manage users and roles',
+            isActive: true,
+            subModules: [],
+          },
+        ],
+      },
+    },
+  })
+  getSidebarStructure() {
+    return this.moduleService.getSidebarStructure();
+  }
 }

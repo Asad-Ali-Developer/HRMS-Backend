@@ -93,4 +93,40 @@ export class ModuleService {
       },
     });
   }
+
+  /**
+   * Fetches all active modules with their active submodules nested inside.
+   * Ideal for Sidebar navigation.
+   */
+  async getSidebarStructure() {
+    const modules = await this.prisma.module.findMany({
+      where: {
+        isActive: true,
+      },
+      include: {
+        subModules: {
+          where: {
+            isActive: true,
+          },
+          orderBy: {
+            name: 'asc', // Optional: Sort submodules alphabetically
+          },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            // You can add more fields if needed for the sidebar tooltip/link
+          },
+        },
+      },
+      orderBy: {
+        name: 'asc', // Optional: Sort modules alphabetically
+      },
+    });
+
+    return {
+      message: 'Sidebar structure fetched successfully.',
+      data: modules,
+    };
+  }
 }
